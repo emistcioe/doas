@@ -1,0 +1,24 @@
+name: Deploy TCIOE Department to VPS
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Build & Deploy to VPS
+    runs-on: [self-hosted, club]
+    env:
+      NEXT_PUBLIC_API_BASE: ${{ secrets.NEXT_PUBLIC_API_BASE }}
+      NEXT_PUBLIC_API_PUBLIC_PREFIX: ${{ secrets.NEXT_PUBLIC_API_PUBLIC_PREFIX }}
+      NEXT_PUBLIC_API_NOTICE_PUBLIC_PREFIX: ${{ secrets.NEXT_PUBLIC_API_NOTICE_PUBLIC_PREFIX }}
+      NEXT_PUBLIC_USE_PROXY: ${{ secrets.NEXT_PUBLIC_USE_PROXY }}
+      NEXT_PUBLIC_DEPARTMENT: ${{ secrets.NEXT_PUBLIC_DEPARTMENT }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run Unified VPS Deployer
+        run: |
+          cd /srv/deployer
+          node deploy.js $GITHUB_REPOSITORY

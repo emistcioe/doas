@@ -1,0 +1,9 @@
+{
+  "name": "doas",
+  "type": "node",
+  "path": "/srv/apps/doas",
+  "port": 3014,
+  "domain": "doas.edu.np",
+  "build": "pnpm install && pnpm build",
+  "start": "pnpm start"
+}

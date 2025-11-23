@@ -1,0 +1,77 @@
+name: Discord Notifications via Google Apps Script
+on:
+  push:
+  pull_request:
+    types: [opened, closed, reopened, synchronize]
+  issues:
+    types: [opened, closed, reopened]
+
+jobs:
+  notify-discord:
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Send notification to Google Apps Script
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const gasUrl = 'https://script.google.com/macros/s/AKfycbwz3uWv1m8VjP9rGmrbubZCE8vxXXbgspDV28lAcm_UP7501lCPHd_An_ulQG4qBhgY/exec';
+
+            // Prepare the payload with all necessary GitHub context
+            const payload = {
+              ...context.payload,
+              event_name: context.eventName,
+              sha: context.sha,
+              ref: context.ref,
+              workflow: context.workflow,
+              action: context.action,
+              actor: context.actor,
+              repository: context.payload.repository,
+              // Add some additional context that might be missing
+              sender: context.payload.sender || context.actor
+            };
+
+            // Send as URL parameters since Google Apps Script handles these more reliably
+            const params = new URLSearchParams({
+              'x-github-event': context.eventName,
+              'x-github-delivery': context.runId.toString(),
+              'event-type': context.eventName
+            });
+
+            const fullUrl = `${gasUrl}?${params.toString()}`;
+
+            try {
+              const response = await fetch(fullUrl, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+              });
+              
+              if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+              }
+              
+              const result = await response.text();
+             
+              
+             
+              
+            } catch (error) {
+
+              console.error('Error details:', error.message);
+              throw error;
+            }
+
+      - name: Log event details
+        run: |
+          echo "Event: ${{ github.event_name }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "SHA: ${{ github.sha }}"

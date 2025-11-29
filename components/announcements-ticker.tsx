@@ -3,44 +3,26 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import {
-  useDepartmentEvents,
-  useDepartmentNotices,
-} from "@/hooks/use-department";
+import { useDepartmentNotices } from "@/hooks/use-department";
 
-type Item = { kind: "event" | "notice"; title: string; href: string };
+type Item = { kind: "notice"; title: string; href: string };
 
 export default function AnnouncementsTicker() {
-  // Fetch a few headlines
-  const { data: events } = useDepartmentEvents({
-    limit: 6,
-    ordering: "-eventStartDate",
-  });
+  // Fetch notices only
   const { data: notices } = useDepartmentNotices({
     limit: 6,
     ordering: "-publishedAt",
   });
 
   const items: Item[] = useMemo(() => {
-    const ev = (events?.results || []).map((e) => ({
-      kind: "event" as const,
-      title: e.title ?? "",
-      href: "/events",
-    }));
+    // Only show notices, no events
     const no = (notices?.results || []).map((n) => ({
       kind: "notice" as const,
       title: n.title ?? "",
       href: "/notices",
     }));
-    // Interleave to mix both
-    const out: Item[] = [];
-    const max = Math.max(ev.length, no.length);
-    for (let i = 0; i < max; i++) {
-      if (no[i]) out.push(no[i]);
-      if (ev[i]) out.push(ev[i]);
-    }
-    return out.length ? out : [];
-  }, [events?.results, notices?.results]);
+    return no;
+  }, [notices?.results]);
 
   const [index, setIndex] = useState(0);
   const [animateIn, setAnimateIn] = useState(true);
@@ -63,21 +45,8 @@ export default function AnnouncementsTicker() {
   }, [items.length]);
 
   if (!items.length) {
-    return (
-      <div className="bg-accent text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-2">
-            <div className="flex items-center space-x-4">
-              <span className="text-sm font-medium">Announcements</span>
-            </div>
-            <div className="text-center flex-1">
-              <span className="text-sm/6 opacity-80">No recent updates</span>
-            </div>
-            <div className="w-4" />
-          </div>
-        </div>
-      </div>
-    );
+    // Don't show anything if there are no notices
+    return null;
   }
 
   const current = items[index];

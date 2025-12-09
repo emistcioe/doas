@@ -50,20 +50,25 @@ export default function FacultyPage() {
           headers: { Accept: "application/json" },
           signal: controller.signal,
         });
-        if (!deptRes.ok) throw new Error(`Department fetch failed ${deptRes.status}`);
+        if (!deptRes.ok)
+          throw new Error(`Department fetch failed ${deptRes.status}`);
         const deptJson = await deptRes.json();
         const code = (DEPARTMENT_CODE || "").toUpperCase();
         const target = (deptJson?.results || []).find(
           (d: any) => (d?.name || "").toUpperCase() === code
         );
         const departmentId = target?.id;
-        if (!departmentId) throw new Error("Department not found in schedule backend.");
+        if (!departmentId)
+          throw new Error("Department not found in schedule backend.");
 
         const teacherRes = await fetch(
-          `${SCHEDULE_API_BASE}/teacher/list/?department=${encodeURIComponent(departmentId)}`,
+          `${SCHEDULE_API_BASE}/teacher/list/?department=${encodeURIComponent(
+            departmentId
+          )}&is_assigned=true`,
           { headers: { Accept: "application/json" }, signal: controller.signal }
         );
-        if (!teacherRes.ok) throw new Error(`Teacher fetch failed ${teacherRes.status}`);
+        if (!teacherRes.ok)
+          throw new Error(`Teacher fetch failed ${teacherRes.status}`);
         const teacherJson = await teacherRes.json();
         setTeachers(
           (teacherJson?.results || []).map((t: any) => ({
@@ -77,7 +82,9 @@ export default function FacultyPage() {
         );
       } catch (err) {
         if ((err as any)?.name === "AbortError") return;
-        setError(err instanceof Error ? err.message : "Failed to load faculty.");
+        setError(
+          err instanceof Error ? err.message : "Failed to load faculty."
+        );
       } finally {
         setLoading(false);
       }
@@ -170,11 +177,11 @@ export default function FacultyPage() {
           )}
         </div>
 
-        {/* Teachers from schedule backend */}
+        {/* Full-time Teachers */}
         <div className="space-y-4 mt-12">
-          <h2 className="text-3xl font-bold">Teachers</h2>
+          <h2 className="text-3xl font-bold">Full-Time Teachers</h2>
           {loading && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
                 <Card key={i}>
                   <CardContent className="p-6">
@@ -186,71 +193,197 @@ export default function FacultyPage() {
             </div>
           )}
           {error && <p className="text-red-500">Failed to load teachers.</p>}
-          {!loading && !error && teachers.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {teachers.map((member) => (
-                <Card
-                  key={member.id}
-                  className="text-left border border-gray-200 shadow-sm hover:shadow-md transition"
-                >
-                  <CardHeader className="pb-3 space-y-1">
-                    <CardTitle className="text-lg font-semibold text-gray-900">
-                      {member.name}
-                    </CardTitle>
-                    <CardDescription className="text-sm text-muted-foreground">
-                      {member.designation
-                        ? member.designation.replace(/_/g, " ")
-                        : "Faculty"}
-                    </CardDescription>
-                    {member.teacher_type && (
-                      <Badge variant="outline" className="w-fit text-xs">
-                        {member.teacher_type.replace(/_/g, " ")}
-                      </Badge>
-                    )}
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {member.email && (
-                      <p className="text-sm">
-                        <span className="font-semibold text-foreground">Email: </span>
-                        <a
-                          href={`mailto:${member.email}`}
-                          className="text-primary hover:underline break-all"
-                        >
-                          {member.email}
-                        </a>
-                      </p>
-                    )}
-                    {member.subjects?.length ? (
-                      <div className="space-y-2">
-                        <p className="text-sm font-semibold text-foreground">
-                          Subjects
-                        </p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {member.subjects.map((s) => (
-                            <span
-                              key={s.id}
-                              className="text-xs rounded-full bg-amber-100 text-amber-900 px-2.5 py-1 leading-tight"
-                            >
-                              {s.name} ({s.code})
-                            </span>
-                          ))}
+          {!loading &&
+            !error &&
+            teachers.filter((t) => t.teacher_type === "full_time").length >
+              0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {teachers
+                  .filter((t) => t.teacher_type === "full_time")
+                  .map((member) => (
+                    <article
+                      key={member.id}
+                      className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-gradient-to-br from-white via-white to-primary/5 p-6 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-primary/30"
+                    >
+                      {/* Decorative elements */}
+                      <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 blur-2xl transition-all duration-300 group-hover:scale-150" />
+                      <div className="absolute -left-8 -bottom-8 h-32 w-32 rounded-full bg-gradient-to-tr from-blue-500/10 to-purple-500/10 blur-2xl transition-all duration-300 group-hover:scale-125" />
+
+                      {/* Content */}
+                      <div className="relative z-10 space-y-4">
+                        {/* Name initial circle */}
+                        <div className="flex items-center gap-4">
+                          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-xl font-bold text-white shadow-lg ring-4 ring-primary/10 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6">
+                            {member.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-lg font-bold text-gray-900 transition-colors group-hover:text-primary">
+                              {member.name}
+                            </h3>
+                            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                              {member.designation
+                                ? member.designation.replace(/_/g, " ")
+                                : "Faculty"}
+                            </p>
+                          </div>
                         </div>
+
+                        {/* Decorative divider */}
+                        <div className="flex items-center gap-2">
+                          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+                          <div className="h-1.5 w-1.5 rounded-full bg-primary/50" />
+                          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+                        </div>
+
+                        {/* Email */}
+                        {member.email && (
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2">
+                              <svg
+                                className="h-4 w-4 text-primary/70"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                />
+                              </svg>
+                              <span className="text-xs font-semibold text-gray-500">
+                                Email
+                              </span>
+                            </div>
+                            <a
+                              href={`mailto:${member.email}`}
+                              className="block break-all text-sm font-medium text-primary transition-all hover:text-primary/80 hover:translate-x-1"
+                            >
+                              {member.email}
+                            </a>
+                          </div>
+                        )}
                       </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">
-                        Subjects not assigned yet.
-                      </p>
-                    )}
+
+                      {/* Hover effect corner accent */}
+                      <div className="absolute bottom-0 right-0 h-20 w-20 translate-x-10 translate-y-10 rounded-full bg-gradient-to-tl from-primary/20 to-transparent opacity-0 blur-xl transition-all duration-500 group-hover:translate-x-6 group-hover:translate-y-6 group-hover:opacity-100" />
+                    </article>
+                  ))}
+              </div>
+            )}
+          {!loading &&
+            !error &&
+            teachers.filter((t) => t.teacher_type === "full_time").length ===
+              0 && (
+              <p className="text-sm text-muted-foreground">
+                No full-time teachers available right now.
+              </p>
+            )}
+        </div>
+
+        {/* Visiting Faculties (Part-time Teachers) */}
+        <div className="space-y-4 mt-12">
+          <h2 className="text-3xl font-bold">Visiting Faculties</h2>
+          {loading && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(3)].map((_, i) => (
+                <Card key={i}>
+                  <CardContent className="p-6">
+                    <Skeleton className="h-6 w-2/3" />
+                    <Skeleton className="h-4 w-1/2 mt-2" />
                   </CardContent>
                 </Card>
               ))}
             </div>
           )}
-          {!loading && !error && teachers.length === 0 && (
-            <p className="text-sm text-muted-foreground">
-              No teacher data available right now.
-            </p>
-          )}
+          {!loading &&
+            !error &&
+            teachers.filter((t) => t.teacher_type === "part_time").length >
+              0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {teachers
+                  .filter((t) => t.teacher_type === "part_time")
+                  .map((member) => (
+                    <article
+                      key={member.id}
+                      className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-gradient-to-br from-white via-white to-blue-500/5 p-6 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-blue-500/30"
+                    >
+                      {/* Decorative elements */}
+                      <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/10 blur-2xl transition-all duration-300 group-hover:scale-150" />
+                      <div className="absolute -left-8 -bottom-8 h-32 w-32 rounded-full bg-gradient-to-tr from-purple-500/10 to-pink-500/10 blur-2xl transition-all duration-300 group-hover:scale-125" />
+
+                      {/* Content */}
+                      <div className="relative z-10 space-y-4">
+                        {/* Name initial circle */}
+                        <div className="flex items-center gap-4">
+                          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-xl font-bold text-white shadow-lg ring-4 ring-blue-500/10 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6">
+                            {member.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-lg font-bold text-gray-900 transition-colors group-hover:text-blue-600">
+                              {member.name}
+                            </h3>
+                            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                              {member.designation
+                                ? member.designation.replace(/_/g, " ")
+                                : "Visiting Faculty"}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Decorative divider */}
+                        <div className="flex items-center gap-2">
+                          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+                          <div className="h-1.5 w-1.5 rounded-full bg-blue-500/50" />
+                          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+                        </div>
+
+                        {/* Email */}
+                        {member.email && (
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2">
+                              <svg
+                                className="h-4 w-4 text-blue-500/70"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                />
+                              </svg>
+                              <span className="text-xs font-semibold text-gray-500">
+                                Email
+                              </span>
+                            </div>
+                            <a
+                              href={`mailto:${member.email}`}
+                              className="block break-all text-sm font-medium text-blue-600 transition-all hover:text-blue-500 hover:translate-x-1"
+                            >
+                              {member.email}
+                            </a>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Hover effect corner accent */}
+                      <div className="absolute bottom-0 right-0 h-20 w-20 translate-x-10 translate-y-10 rounded-full bg-gradient-to-tl from-blue-500/20 to-transparent opacity-0 blur-xl transition-all duration-500 group-hover:translate-x-6 group-hover:translate-y-6 group-hover:opacity-100" />
+                    </article>
+                  ))}
+              </div>
+            )}
+          {!loading &&
+            !error &&
+            teachers.filter((t) => t.teacher_type === "part_time").length ===
+              0 && (
+              <p className="text-sm text-muted-foreground">
+                No visiting faculties available right now.
+              </p>
+            )}
         </div>
       </div>
     </div>

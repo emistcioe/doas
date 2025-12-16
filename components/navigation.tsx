@@ -19,12 +19,13 @@ const navigationItems = [
   { name: "Notices", href: "/notices", group: "main" },
   { name: "Downloads", href: "/downloads", group: "main" },
   { name: "Gallery", href: "/gallery", group: "more" },
-  { name: "Contact Us", href: "/contact", group: "more" },
 ];
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const { data: dept } = useDepartmentContext();
+  const mainItems = navigationItems.filter((item) => item.group === "main");
+  const moreItems = navigationItems.filter((item) => item.group === "more");
 
   return (
     <>
@@ -80,26 +81,23 @@ export function Navigation() {
             <div className="flex justify-between items-center">
               {/* Desktop Navigation */}
               <div className="hidden lg:flex items-center space-x-6">
-                {navigationItems
-                  .filter((item) => item.group === "main")
-                  .map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className="px-3 py-4 text-sm font-medium text-gray-700 hover:text-primary hover:border-b-2 hover:border-primary transition-all duration-200"
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
-                <div className="relative group">
-                  <button className="flex items-center px-3 py-4 text-sm font-medium text-gray-700 hover:text-primary transition-colors">
-                    More
-                    <ChevronDown className="ml-1 h-4 w-4" />
-                  </button>
-                  <div className="absolute left-0 mt-0 w-48 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    {navigationItems
-                      .filter((item) => item.group === "more")
-                      .map((item) => (
+                {mainItems.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className="px-3 py-4 text-sm font-medium text-gray-700 hover:text-primary hover:border-b-2 hover:border-primary transition-all duration-200"
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+                {moreItems.length > 1 && (
+                  <div className="relative group">
+                    <button className="flex items-center px-3 py-4 text-sm font-medium text-gray-700 hover:text-primary transition-colors">
+                      More
+                      <ChevronDown className="ml-1 h-4 w-4" />
+                    </button>
+                    <div className="absolute left-0 mt-0 w-48 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                      {moreItems.map((item) => (
                         <Link
                           key={item.name}
                           href={item.href}
@@ -108,8 +106,18 @@ export function Navigation() {
                           {item.name}
                         </Link>
                       ))}
+                    </div>
                   </div>
-                </div>
+                )}
+                {moreItems.length === 1 && (
+                  <Link
+                    key={moreItems[0].name}
+                    href={moreItems[0].href}
+                    className="px-3 py-4 text-sm font-medium text-gray-700 hover:text-primary hover:border-b-2 hover:border-primary transition-all duration-200"
+                  >
+                    {moreItems[0].name}
+                  </Link>
+                )}
               </div>
 
               {/* Mobile menu button */}

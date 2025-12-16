@@ -104,10 +104,10 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/contact"
+                  href="/gallery"
                   className="hover:text-secondary transition-colors"
                 >
-                  Contact
+                  Gallery
                 </Link>
               </li>
             </ul>

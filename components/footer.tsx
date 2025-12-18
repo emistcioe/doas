@@ -113,36 +113,67 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Resources */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Resources</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link
-                  href="/downloads"
-                  className="hover:text-secondary transition-colors"
-                >
-                  Downloads
-                </Link>
-              </li>
-              <li></li>
-              <li>
-                <Link
-                  href="/gallery"
-                  className="hover:text-secondary transition-colors"
-                >
-                  Gallery
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/faculty"
-                  className="hover:text-secondary transition-colors"
-                >
-                  Faculty & Staff
-                </Link>
-              </li>
-            </ul>
+          {/* Resources + Submissions */}
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold">Resources</h3>
+              <ul className="mt-4 space-y-2 text-sm">
+                <li>
+                  <Link
+                    href="/downloads"
+                    className="hover:text-secondary transition-colors"
+                  >
+                    Downloads
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/gallery"
+                    className="hover:text-secondary transition-colors"
+                  >
+                    Gallery
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/faculty"
+                    className="hover:text-secondary transition-colors"
+                  >
+                    Faculty & Staff
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold">Submit Work</h3>
+              <ul className="mt-4 space-y-2 text-sm">
+                <li>
+                  <a
+                    href="#department-submissions"
+                    className="hover:text-secondary transition-colors"
+                  >
+                    Submit Project
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#department-submissions"
+                    className="hover:text-secondary transition-colors"
+                  >
+                    Submit Research
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#department-submissions"
+                    className="hover:text-secondary transition-colors"
+                  >
+                    Submit Journal
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
 
           {/* Get In Touch */}

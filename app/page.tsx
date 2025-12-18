@@ -36,6 +36,7 @@ import {
 } from "@/lib/data/publicDepartment";
 import { listNotices as listPublicNotices } from "@/lib/data/publicNotice";
 import { sanitizeHtml } from "@/lib/utils/sanitize";
+import { DepartmentSubmissionSection } from "@/components/submissions/DepartmentSubmissionSection";
 
 function eventStatus(start?: string | null, end?: string | null) {
   const now = new Date();
@@ -676,6 +677,8 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <DepartmentSubmissionSection department={dept} />
     </div>
   );
 }

@@ -150,7 +150,7 @@ export function Footer() {
               <ul className="mt-4 space-y-2 text-sm">
                 <li>
                   <a
-                    href="#department-submissions"
+                    href="/submit-project"
                     className="hover:text-secondary transition-colors"
                   >
                     Submit Project
@@ -158,18 +158,10 @@ export function Footer() {
                 </li>
                 <li>
                   <a
-                    href="#department-submissions"
+                    href="/submit-research"
                     className="hover:text-secondary transition-colors"
                   >
                     Submit Research
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#department-submissions"
-                    className="hover:text-secondary transition-colors"
-                  >
-                    Submit Journal
                   </a>
                 </li>
               </ul>

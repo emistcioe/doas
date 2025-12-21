@@ -2,7 +2,7 @@
 
 import type { DepartmentDetail } from "@/lib/types/department";
 import { Button } from "@/components/ui/button";
-import { FileCode2, FlaskConical, BookOpen, ArrowRight, CheckCircle2 } from "lucide-react";
+import { FileCode2, FlaskConical, ArrowRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
 interface Props {
@@ -29,13 +29,6 @@ export function DepartmentSubmissionSection({ department }: Props) {
       href: "/submit-research",
       features: ["Research methodology", "Expected outcomes", "Publication URLs"],
     },
-    {
-      title: "Submit Journal",
-      description: "Share your published research papers and journal articles.",
-      icon: BookOpen,
-      href: "/submit-journal",
-      features: ["Article details & abstract", "Author information", "DOI & publication data"],
-    },
   ];
 
   return (
@@ -50,7 +43,7 @@ export function DepartmentSubmissionSection({ department }: Props) {
             Submit Your Work
           </h2>
           <p className="text-muted-foreground">
-            Students and faculty can submit projects, research, and journal manuscripts. 
+            Students and faculty can submit projects and research work. 
             Verify with your campus email and the department will review before publishing.
           </p>
         </div>

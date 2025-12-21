@@ -2,8 +2,7 @@ import { useCallback, useState } from "react";
 
 type SubmissionPurpose =
   | "project_submission"
-  | "research_submission"
-  | "journal_submission";
+  | "research_submission";
 
 type OtpStatus = "idle" | "sent" | "verified";
 

@@ -15,12 +15,14 @@ export default function AnnouncementsTicker() {
   });
 
   const items: Item[] = useMemo(() => {
-    // Only show notices, no events
-    const no = (notices?.results || []).map((n) => ({
-      kind: "notice" as const,
-      title: n.title ?? "",
-      href: "/notices",
-    }));
+    // Only show notices approved by department
+    const no = (notices?.results || [])
+      .filter((n) => n.isApprovedByDepartment)
+      .map((n) => ({
+        kind: "notice" as const,
+        title: n.title ?? "",
+        href: `/notices/${n.uuid}`,
+      }));
     return no;
   }, [notices?.results]);
 

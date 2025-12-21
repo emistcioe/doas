@@ -18,6 +18,8 @@ export type Notice = {
   description: string
   thumbnail: string | null
   isFeatured: boolean
+  isApprovedByDepartment: boolean
+  isApprovedByCampus: boolean
   department: { uuid: string; name: string }
   category: { uuid: string; name: string } | null
   publishedAt: string

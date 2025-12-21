@@ -2,19 +2,16 @@
 
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Bell, Calendar, Download, ExternalLink, Pin, User } from "lucide-react";
+import { Bell, Calendar, ChevronRight } from "lucide-react";
 import { useDepartment, useDepartmentNotices } from "@/hooks/use-department";
 import { Skeleton } from "@/components/ui/skeleton";
-import { sanitizeHtml } from "@/lib/utils/sanitize";
 import { useMemo, useState } from "react";
-import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
+import Link from "next/link";
 
 export default function NoticesPage() {
   const { data: dept } = useDepartment();
@@ -23,7 +20,8 @@ export default function NoticesPage() {
     limit: 20,
   });
 
-  const notices = data?.results || [];
+  // Only show notices approved by department
+  const notices = (data?.results || []).filter((n) => n.isApprovedByDepartment);
   const categories = useMemo(() => {
     const set = new Set<string>();
     notices.forEach((n) => n.category?.name && set.add(n.category.name));
@@ -31,7 +29,13 @@ export default function NoticesPage() {
   }, [notices]);
   const [cat, setCat] = useState<string>("All");
   const filtered = notices.filter((n) => cat === "All" || n.category?.name === cat);
-  const [openMediaId, setOpenMediaId] = useState<string | null>(null);
+
+  // Helper to strip HTML and truncate description
+  const getShortDescription = (html: string, maxLength = 150) => {
+    const text = html.replace(/<[^>]*>/g, "").trim();
+    if (text.length <= maxLength) return text;
+    return text.slice(0, maxLength).trim() + "...";
+  };
   const fmt = (d: string) =>
     new Date(d).toLocaleDateString(undefined, {
       year: "numeric",
@@ -89,84 +93,34 @@ export default function NoticesPage() {
           {!loading && !error && (
             <div className="space-y-4">
               {filtered.map((notice) => (
-                <Card key={notice.uuid} className="hover:shadow-md transition-shadow overflow-hidden">
-                 <CardHeader>
-                    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          {notice.category?.name && (
-                            <Badge variant="outline">{notice.category.name}</Badge>
-                          )}
-                          {notice.isFeatured && <Badge>Featured</Badge>}
+                <Link key={notice.uuid} href={`/notices/${notice.uuid}`}>
+                  <Card className="hover:shadow-md transition-shadow overflow-hidden cursor-pointer">
+                    <CardHeader>
+                      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            {notice.category?.name && (
+                              <Badge variant="outline">{notice.category.name}</Badge>
+                            )}
+                            {notice.isFeatured && <Badge>Featured</Badge>}
+                          </div>
+                          <CardTitle className="text-lg mb-2">
+                            {notice.title}
+                          </CardTitle>
+                          <CardDescription className="line-clamp-2">
+                            {getShortDescription(notice.description || "")}
+                          </CardDescription>
                         </div>
-                        <CardTitle className="text-lg mb-2 truncate">
-                          {notice.title}
-                        </CardTitle>
-                        <CardDescription>
-                          <span
-                            dangerouslySetInnerHTML={{
-                              __html: sanitizeHtml(notice.description || ""),
-                            }}
-                          />
-                        </CardDescription>
-                      </div>
-                      <div className="mt-3 lg:mt-0 text-sm text-muted-foreground flex items-center gap-4 shrink-0">
-                        <span className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4" /> {fmt(notice.publishedAt)}
-                        </span>
-                        {notice.author?.fullName && (
+                        <div className="mt-3 lg:mt-0 text-sm text-muted-foreground flex items-center gap-4 shrink-0">
                           <span className="flex items-center gap-2">
-                            <User className="h-4 w-4" /> {notice.author.fullName}
+                            <Calendar className="h-4 w-4" /> {fmt(notice.publishedAt)}
                           </span>
-                        )}
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-col gap-2">
-                      {(notice.medias || []).map((m) => (
-                        <div key={m.uuid} className="flex items-center justify-between gap-2">
-                          <div className="text-sm text-muted-foreground truncate">
-                            {m.caption || "Attachment"}
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setOpenMediaId((id) => (id === m.uuid ? null : m.uuid))}
-                            >
-                              Preview
-                            </Button>
-                            <a href={m.file} target="_blank" rel="noreferrer">
-                              <Button size="sm">
-                                <Download className="h-4 w-4 mr-2" />
-                                Download
-                              </Button>
-                            </a>
-                          </div>
+                          <ChevronRight className="h-5 w-5" />
                         </div>
-                      ))}
-
-                      {(notice.medias || []).map((m) => (
-                        <Collapsible key={m.uuid + "-content"} open={openMediaId === m.uuid}>
-                          <CollapsibleContent>
-                            <div className="mt-2 rounded-md border bg-muted/30 p-2">
-                              {/\.(png|jpe?g|gif|webp)$/i.test(m.file) ? (
-                                <img src={m.file} alt={m.caption || notice.title} className="max-h-[60vh] w-full object-contain rounded" />
-                              ) : /\.pdf($|\?)/i.test(m.file) ? (
-                                <div className="h-[70vh]">
-                                  <iframe src={m.file} className="w-full h-full rounded" />
-                                </div>
-                              ) : (
-                                <p className="text-sm text-muted-foreground">Preview not available.</p>
-                              )}
-                            </div>
-                          </CollapsibleContent>
-                        </Collapsible>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                      </div>
+                    </CardHeader>
+                  </Card>
+                </Link>
               ))}
             </div>
           )}

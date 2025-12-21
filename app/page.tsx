@@ -188,7 +188,7 @@ export default async function HomePage() {
   }
 
   const events = eventsRes?.results || [];
-  const notices = noticesRes?.results || [];
+  const notices = (noticesRes?.results || []).filter((n) => n.isApprovedByDepartment);
   const featuredNotice = notices.find((n) => n.isFeatured && n.thumbnail);
   const hod = (staffsRes?.results || []).sort(
     (a, b) => a.displayOrder - b.displayOrder

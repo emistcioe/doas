@@ -16,7 +16,7 @@ export function Footer() {
     departmentUuid: dept?.uuid,
   });
   const featured = useMemo(
-    () => (noticeData?.results || []).find((n) => n.isFeatured && n.thumbnail),
+    () => (noticeData?.results || []).find((n) => n.isApprovedByDepartment && n.isFeatured && n.thumbnail),
     [noticeData]
   );
   const [open, setOpen] = useState(false);

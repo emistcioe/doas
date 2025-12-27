@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useDepartmentNotices } from "@/hooks/use-department";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Calendar, Download, FileText } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { sanitizeHtml } from "@/lib/utils/sanitize";
@@ -20,12 +20,16 @@ export default function NoticeDetailsPage() {
     limit: 100,
   });
 
-  const notice = (data?.results || []).find(
-    (n) => n.uuid === noticeId && n.isApprovedByDepartment
-  );
+  const allNotices = (data?.results || []).filter((n) => n.isApprovedByDepartment);
+  const notice = allNotices.find((n) => n.uuid === noticeId);
+  
+  // Get latest 5 notices for sidebar (excluding current)
+  const latestNotices = allNotices
+    .filter((n) => n.uuid !== noticeId)
+    .slice(0, 5);
 
-  const fmt = (d: string) =>
-    new Date(d).toLocaleDateString(undefined, {
+  const formatDate = (d: string) =>
+    new Date(d).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -33,12 +37,23 @@ export default function NoticeDetailsPage() {
 
   if (loading) {
     return (
-      <div className="py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Skeleton className="h-8 w-32 mb-6" />
-          <Skeleton className="h-12 w-3/4 mb-4" />
-          <Skeleton className="h-6 w-48 mb-8" />
-          <Skeleton className="h-64 w-full" />
+      <div className="py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Skeleton className="h-8 w-64 mb-2" />
+          <Skeleton className="w-16 h-1 mb-8" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <Skeleton className="h-12 w-3/4 mb-4" />
+              <Skeleton className="h-6 w-48 mb-8" />
+              <Skeleton className="h-64 w-full" />
+            </div>
+            <div>
+              <Skeleton className="h-8 w-32 mb-4" />
+              <Skeleton className="h-24 w-full mb-3" />
+              <Skeleton className="h-24 w-full mb-3" />
+              <Skeleton className="h-24 w-full" />
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -46,8 +61,8 @@ export default function NoticeDetailsPage() {
 
   if (error || !notice) {
     return (
-      <div className="py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div className="py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-2xl font-bold mb-4">Notice Not Found</h1>
           <p className="text-muted-foreground mb-6">
             The notice you are looking for does not exist or has been removed.
@@ -64,94 +79,156 @@ export default function NoticeDetailsPage() {
   }
 
   return (
-    <div className="py-16">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Back Button */}
-        <Link href="/notices" className="inline-flex items-center text-muted-foreground hover:text-foreground mb-6">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Notices
-        </Link>
-
-        {/* Notice Header */}
+    <div className="py-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            {notice.category?.name && (
-              <Badge variant="outline">{notice.category.name}</Badge>
-            )}
-            {notice.isFeatured && <Badge>Featured</Badge>}
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-4 break-words">{notice.title}</h1>
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Calendar className="h-4 w-4" />
-            <span>{fmt(notice.publishedAt)}</span>
-          </div>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">
+            Notices and Announcements
+          </h1>
+          <div className="w-16 h-1 bg-primary"></div>
         </div>
 
-        {/* Notice Content */}
-        <Card className="mb-8">
-          <CardContent className="pt-6">
-            <div
-              className="prose prose-neutral dark:prose-invert max-w-none"
-              dangerouslySetInnerHTML={{
-                __html: sanitizeHtml(notice.description || ""),
-              }}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Attachments */}
-        {notice.medias && notice.medias.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Attachments
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2">
+            {/* Notice Title */}
+            <h2 className="text-2xl md:text-3xl font-bold text-primary mb-4 break-words">
+              {notice.title}
             </h2>
-            <div className="space-y-3">
-              {notice.medias.map((m) => (
-                <Card key={m.uuid}>
-                  <CardContent className="py-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">
-                          {m.caption || "Attachment"}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {m.mediaType || "File"}
-                        </p>
-                      </div>
-                      <a href={m.file} target="_blank" rel="noreferrer">
-                        <Button>
-                          <Download className="h-4 w-4 mr-2" />
-                          Download
-                        </Button>
-                      </a>
-                    </div>
 
-                    {/* Preview for images and PDFs */}
+            {/* Category Badge */}
+            {notice.category?.name && (
+              <Badge variant="secondary" className="mb-4 uppercase text-xs font-medium">
+                {notice.category.name}
+              </Badge>
+            )}
+
+            {/* Published Info */}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+              <Calendar className="h-4 w-4" />
+              <span>Published on {formatDate(notice.publishedAt)}</span>
+              <span className="text-muted-foreground/50">•</span>
+              
+            </div>
+
+            {/* Description Section */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold mb-3">Description</h3>
+              <div
+                className="prose prose-neutral dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeHtml(notice.description || ""),
+                }}
+              />
+            </div>
+
+            {/* Attachments - PDF Viewer */}
+            {notice.medias && notice.medias.length > 0 && (
+              <div className="space-y-4">
+                {notice.medias.map((m) => (
+                  <div key={m.uuid}>
+                    {/* Preview for images */}
                     {/\.(png|jpe?g|gif|webp)$/i.test(m.file) && (
-                      <div className="mt-4">
+                      <div className="mb-4">
                         <img
                           src={m.file}
                           alt={m.caption || notice.title}
                           className="max-h-[60vh] w-full object-contain rounded border"
                         />
+                        <div className="mt-2 flex justify-end">
+                          <a href={m.file} target="_blank" rel="noreferrer" download>
+                            <Button variant="outline" size="sm">
+                              <Download className="h-4 w-4 mr-2" />
+                              Download
+                            </Button>
+                          </a>
+                        </div>
                       </div>
                     )}
+
+                    {/* PDF Viewer - keeping as is */}
                     {/\.pdf($|\?)/i.test(m.file) && (
-                      <div className="mt-4 h-[70vh]">
+                      <div className="h-[70vh] rounded border overflow-hidden">
                         <iframe
                           src={m.file}
-                          className="w-full h-full rounded border"
+                          className="w-full h-full"
                           title={m.caption || "PDF Preview"}
                         />
                       </div>
                     )}
-                  </CardContent>
-                </Card>
+
+                    {/* Other file types */}
+                    {!/\.(png|jpe?g|gif|webp)$/i.test(m.file) &&
+                      !/\.pdf($|\?)/i.test(m.file) && (
+                        <Card>
+                          <CardContent className="py-4">
+                            <div className="flex items-center justify-between gap-4">
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium truncate">
+                                  {m.caption || "Attachment"}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  {m.mediaType || "File"}
+                                </p>
+                              </div>
+                              <a href={m.file} target="_blank" rel="noreferrer">
+                                <Button size="sm">
+                                  <Download className="h-4 w-4 mr-2" />
+                                  Download
+                                </Button>
+                              </a>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar - Latest Notices */}
+          <div className="lg:col-span-1">
+            <h3 className="text-xl font-bold mb-4">Latest Notices</h3>
+            <div className="space-y-3">
+              {latestNotices.map((n) => (
+                <Link key={n.uuid} href={`/notices/${n.uuid}`}>
+                  <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
+                    <h4 className="font-medium text-sm mb-2 line-clamp-2 hover:text-primary transition-colors">
+                      {n.title}
+                    </h4>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      {formatDate(n.publishedAt)}
+                    </p>
+                    {n.category?.name && (
+                      <Badge
+                        variant={
+                          n.category.name.toLowerCase() === "event"
+                            ? "default"
+                            : n.category.name.toLowerCase() === "admission"
+                            ? "destructive"
+                            : "secondary"
+                        }
+                        className="text-xs"
+                      >
+                        {n.category.name}
+                      </Badge>
+                    )}
+                  </Card>
+                </Link>
               ))}
             </div>
+
+            {/* View All Notices Link */}
+            <Link
+              href="/notices"
+              className="inline-flex items-center text-primary hover:underline mt-4 text-sm font-medium"
+            >
+              View All Notices →
+            </Link>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
